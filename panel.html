@@ -59,7 +59,7 @@
   <label for="f-gracias1">Agradecimiento (línea grande)</label><input id="f-gracias1">
   <label for="f-gracias2">Agradecimiento (línea pequeña)</label><input id="f-gracias2">
   <label for="f-despedida">Frase de despedida</label><input id="f-despedida">
-  <label for="f-subtitulo">Subtítulo antes del mes</label><input id="f-subtitulo">
+  <label for="f-subtitulo">Subtítulo (se le añade «actuales»: Crónicas → Crónicas actuales)</label><input id="f-subtitulo">
   <label for="f-cita">Cita final</label><textarea id="f-cita"></textarea>
 </div>
 
@@ -78,6 +78,7 @@
   <label for="f-fondo">…o ruta / URL de otra imagen</label><input id="f-fondo" placeholder="img/mi-fondo.jpg">
   <label for="f-video">Vídeo de fondo en bucle (opcional, .webm o .mp4)</label><input id="f-video" placeholder="video/mi-video.mp4">
   <label for="f-estilo">Estilo de marcos y cajas</label><select id="f-estilo"><option value="epico">Épico (líneas doradas finas)</option><option value="hc5">Hardcore T5 (piedra, madera y brasas)</option></select>
+  <label for="f-sello">Marco del logo</label><select id="f-sello"><option value="solo">Logo solo con brillo</option><option value="anillos">Logo dentro de un círculo</option><option value="estrella">Logo con estrella de 6 puntas</option></select>
   <label for="f-tema">Tipografía</label><select id="f-tema"></select>
   <label for="f-colaboradores">Título de la lista</label><input id="f-colaboradores" placeholder="COLABORADORES">
   <div class="fila">
@@ -127,7 +128,7 @@ const base = location.origin + location.pathname.replace(/[^/]*$/, '');
 const REDIRECT = base + 'panel.html';
 let cfg = TV.config();
 let sel = cfg.activa;
-const CAMPOS = ['nombre', 'titulo', 'horas', 'gracias1', 'gracias2', 'despedida', 'subtitulo', 'cita', 'fondo', 'acento', 'efecto', 'colaboradores', 'video', 'patroTitulo'];
+const CAMPOS = ['nombre', 'titulo', 'horas', 'gracias1', 'gracias2', 'despedida', 'subtitulo', 'cita', 'fondo', 'acento', 'efecto', 'colaboradores', 'video', 'patroTitulo', 'sello'];
 
 TV.recogerTokenDeURL();
 
@@ -149,6 +150,7 @@ function pintarCampos() {
   const s = serie();
   for (const c of CAMPOS) $('f-' + c).value = s[c] ?? '';
   $('f-tema').value = s.tema || 'epica';
+  $('f-sello').value = s.sello || 'solo';
   $('f-estilo').value = s.estilo || 'epico';
   $('comandos').innerHTML = '';
   (s.comandos || []).forEach((cmd, i) => {

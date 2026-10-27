@@ -52,6 +52,13 @@
 
   .sello-logo { position: relative; width: 190px; height: 190px; display: flex; align-items: center; justify-content: center; flex: none; }
   .sello-logo svg { position: absolute; inset: 0; }
+  .sello-anillos img { height: 92px !important; }
+  .sello-solo { height: 170px; }
+  .sello-solo img { height: 150px !important; filter: drop-shadow(0 0 14px var(--acento)) drop-shadow(0 0 2px rgba(0,0,0,.8)) !important; }
+  .v .panel .sello-anillos img { height: 72px !important; }
+  .v .panel .sello-solo { width: 150px; height: 150px; }
+  .v .panel .sello-solo img { height: 128px !important; }
+  .hc5 .sello-solo img { filter: drop-shadow(0 0 14px var(--ember)) drop-shadow(0 0 2px rgba(0,0,0,.8)) !important; }
   .sello-logo img { position: relative; height: 64px; filter: drop-shadow(0 0 8px var(--acento)); }
 
   .cab { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
@@ -199,10 +206,20 @@ function mesMostrado() {
   return TV.claveMes(hoy);
 }
 
-function svgSello() {
+// Subtítulo: con subs activos → "Crónicas actuales"; en modo mes → "Crónicas de octubre"
+function textoSubtitulo(s, mes) {
+  const base = (s.subtitulo || '').trim();
+  if (MODO_MES) return `${base} ${TV.nombreMes(mes)}`.trim();
+  return `${base.replace(/\s+(de|del)$/i, '')} actuales`.trim();
+}
+const tipoSello = (s) => P.get('sello') || s.sello || 'solo';
+// Marco del logo: 'solo' (sin adornos), 'anillos' (círculos sin estrella) o 'estrella'
+function svgSello(tipo) {
+  if (tipo === 'solo') return '';
+  const estrella = tipo === 'estrella' ? '<path d="M75 3 L137 111 L13 111 Z"/><path d="M75 147 L13 39 L137 39 Z"/>' : '';
+  const interior = tipo === 'estrella' ? '<circle cx="75" cy="75" r="48"/>' : '';
   return `<svg viewBox="0 0 150 150" fill="none" stroke="var(--acento)" stroke-width="1.2" aria-hidden="true">
-    <circle cx="75" cy="75" r="72"/><circle cx="75" cy="75" r="62" stroke-dasharray="2 5"/><circle cx="75" cy="75" r="48"/>
-    <path d="M75 3 L137 111 L13 111 Z"/><path d="M75 147 L13 39 L137 39 Z"/></svg>`;
+    <circle cx="75" cy="75" r="72"/><circle cx="75" cy="75" r="62" stroke-dasharray="2 5"/>${interior}${estrella}</svg>`;
 }
 
 function htmlBarrera(W, H) {
@@ -275,10 +292,10 @@ function pintar() {
       <div class="acc"><div class="despedida">${esc(s.despedida)}</div><div class="comandos">${comandos}</div></div>
     </div>
     <div class="panel">
-      <div class="sello-logo">${svgSello()}<img src="img/logo.png" alt="TrikiVals"></div>
+      <div class="sello-logo sello-${tipoSello(s)}">${svgSello(tipoSello(s))}<img src="img/logo.png" alt="TrikiVals"></div>
       <div class="cab">
         <h1>${esc(s.colaboradores || 'COLABORADORES')}</h1>
-        <div class="mes">${esc(s.subtitulo)} ${TV.nombreMes(mes)}</div>
+        <div class="mes">${esc(textoSubtitulo(s, mes))}</div>
         <div class="separador"><span></span><i></i><span></span></div>
         <div class="cuentas"><div><b>${datos.total}</b> SUBS</div><div><b>${datos.regaladas}</b> REGALADAS</div></div>
       </div>
