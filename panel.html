@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel de despedida</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root { --fondo: #101418; --caja: #182027; --borde: #2a343d; --texto: #eef2f4; --gris: #9aa7b0; --acento: #e8c56b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--texto); font: 14px/1.4 system-ui, sans-serif; padding: 14px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--gris); margin: 18px 0 8px; }
+  .caja { background: var(--caja); border: 1px solid var(--borde); border-radius: 8px; padding: 12px; }
+  label { display: block; font-size: 12px; color: var(--gris); margin: 10px 0 4px; }
+  input, textarea, select { width: 100%; padding: 8px 10px; background: #0c1014; color: var(--texto); border: 1px solid var(--borde); border-radius: 6px; font: inherit; }
+  textarea { min-height: 54px; resize: vertical; }
+  button { padding: 8px 12px; border: 1px solid var(--borde); background: #222c35; color: var(--texto); border-radius: 6px; font: inherit; cursor: pointer; min-height: 36px; }
+  button:hover { background: #2b3843; }
+  button.primario { background: var(--acento); border-color: var(--acento); color: #201700; font-weight: 600; }
+  .fila { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .fila > * { flex: 1; min-width: 0; }
+  .fila > button, .fila > .fijo { flex: none; }
+  .pestanas { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pestanas button.on { background: var(--acento); color: #201700; border-color: var(--acento); font-weight: 600; }
+  .fondos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .fondos button { padding: 0; height: 52px; overflow: hidden; border-width: 2px; }
+  .fondos button.on { border-color: var(--acento); }
+  .fondos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; background: #0c1014; border: 1px solid var(--borde); border-radius: 999px; margin: 3px; font-size: 13px; }
+  .chip.oculto { opacity: .45; text-decoration: line-through; }
+  .chip button { min-height: 0; padding: 0 6px; border: 0; background: none; color: var(--gris); }
+  .estado { font-size: 12px; color: var(--gris); }
+  .ok { color: #7fd9a4; } .mal { color: #ff8f8f; }
+  .url { font: 12px monospace; word-break: break-all; background: #0c1014; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--borde); }
+  .nota { font-size: 12px; color: var(--gris); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<h2>Serie</h2>
+<div class="caja">
+  <div class="pestanas" id="pestanas"></div>
+  <div class="fila" style="margin-top:10px">
+    <button id="nueva">+ Nueva serie</button>
+    <button id="duplicar">Duplicar</button>
+    <button id="borrar">Borrar</button>
+  </div>
+  <p class="nota">La serie marcada es la que sale en la despedida. Las URLs de abajo fijan una serie concreta en cada escena de OBS.</p>
+</div>
+
+<h2>Textos de la serie</h2>
+<div class="caja">
+  <label for="f-nombre">Nombre interno</label><input id="f-nombre">
+  <label for="f-titulo">Título de arriba</label><input id="f-titulo">
+  <label for="f-horas">Sello (horas, día, nivel...)</label>
+  <div class="fila"><input id="f-horas"><button class="fijo" id="horas-mas" title="Sumar horas">+ horas</button></div>
+  <label>Comandos</label>
+  <div id="comandos"></div>
+  <button id="cmd-mas" style="margin-top:6px">+ Comando</button>
+  <label for="f-gracias1">Agradecimiento (línea grande)</label><input id="f-gracias1">
+  <label for="f-gracias2">Agradecimiento (línea pequeña)</label><input id="f-gracias2">
+  <label for="f-despedida">Frase de despedida</label><input id="f-despedida">
+  <label for="f-subtitulo">Subtítulo antes del mes</label><input id="f-subtitulo">
+  <label for="f-cita">Cita final</label><textarea id="f-cita"></textarea>
+</div>
+
+<h2>Patrocinadores de la serie</h2>
+<div class="caja">
+  <label for="f-patroTitulo">Título de la sección</label><input id="f-patroTitulo" placeholder="PATROCINADORES">
+  <div id="patros"></div>
+  <button id="patro-mas" style="margin-top:8px">+ Patrocinador</button>
+  <p class="nota">Solo sale en la despedida si hay alguno. Cada serie tiene los suyos.</p>
+</div>
+
+<h2>Aspecto</h2>
+<div class="caja">
+  <label>Fondo</label>
+  <div class="fondos" id="fondos"></div>
+  <label for="f-fondo">…o ruta / URL de otra imagen</label><input id="f-fondo" placeholder="img/mi-fondo.jpg">
+  <label for="f-video">Vídeo de fondo en bucle (opcional, .webm o .mp4)</label><input id="f-video" placeholder="video/mi-video.mp4">
+  <label for="f-estilo">Estilo de marcos y cajas</label><select id="f-estilo"><option value="epico">Épico (líneas doradas finas)</option><option value="hc5">Hardcore T5 (piedra, madera y brasas)</option></select>
+  <label for="f-tema">Tipografía</label><select id="f-tema"></select>
+  <label for="f-colaboradores">Título de la lista</label><input id="f-colaboradores" placeholder="COLABORADORES">
+  <div class="fila">
+    <div><label for="f-acento">Color de detalles</label><input id="f-acento" type="color" style="height:38px;padding:2px"></div>
+    <div><label for="f-efecto">Efecto</label><select id="f-efecto"><option value="ninguno">Ninguno</option><option value="barrera">Barrera mágica (fondo del faro)</option><option value="brasas">Brasas que suben</option></select></div>
+  </div>
+</div>
+
+<h2>URLs para OBS</h2>
+<div class="caja">
+  <label>Horizontal (1920×1080)</label><div class="url" id="url-h"></div>
+  <label>Vertical TikTok (1080×1920)</label><div class="url" id="url-v"></div>
+  <div class="fila" style="margin-top:8px"><button id="ver-h">Ver horizontal</button><button id="ver-v">Ver vertical</button></div>
+  <p class="nota">Añade <code>&amp;anterior=1</code> para mostrar el mes pasado.</p>
+</div>
+
+<h2>Colaboradores de <span id="mes"></span></h2>
+<div class="caja">
+  <div id="subs"></div>
+  <div class="fila" style="margin-top:8px">
+    <input id="add-nombre" placeholder="Nombre">
+    <input id="add-regalo" placeholder="Regalo de (opcional)">
+    <button class="fijo" id="add">Añadir</button>
+  </div>
+  <p class="nota">Pulsa × para ocultar a alguien (vuelve a pulsar para mostrarlo). Los subs de Twitch se suman solos y nunca se borran durante el mes.</p>
+</div>
+
+<h2>Twitch</h2>
+<div class="caja">
+  <label for="client">Client ID de tu app de Twitch</label><input id="client">
+  <div class="fila" style="margin-top:10px"><button class="primario" id="conectar">Conectar con Twitch</button><button id="sync">Actualizar ahora</button></div>
+  <p class="estado" id="estado"></p>
+</div>
+
+<h2>Copia de seguridad</h2>
+<div class="caja fila">
+  <button id="exportar">Descargar copia</button>
+  <label class="fijo" style="margin:0"><input type="file" id="importar" accept="application/json" style="display:none"><span class="fijo" style="display:inline-block;padding:8px 12px;border:1px solid var(--borde);border-radius:6px;cursor:pointer">Restaurar copia</span></label>
+</div>
+
+<script src="datos.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const base = location.href.replace(/panel\.html.*$/, '');
+let cfg = TV.config();
+let sel = cfg.activa;
+const CAMPOS = ['nombre', 'titulo', 'horas', 'gracias1', 'gracias2', 'despedida', 'subtitulo', 'cita', 'fondo', 'acento', 'efecto', 'colaboradores', 'video', 'patroTitulo'];
+
+TV.recogerTokenDeURL();
+
+function guardar() { TV.guardarConfig(cfg); }
+const serie = () => cfg.series[sel];
+
+function pintarPestanas() {
+  $('pestanas').innerHTML = '';
+  for (const [id, s] of Object.entries(cfg.series)) {
+    const b = document.createElement('button');
+    b.textContent = (cfg.activa === id ? '● ' : '') + s.nombre;
+    if (id === sel) b.className = 'on';
+    b.onclick = () => { sel = id; cfg.activa = id; guardar(); pintarTodo(); };
+    $('pestanas').appendChild(b);
+  }
+}
+
+function pintarCampos() {
+  const s = serie();
+  for (const c of CAMPOS) $('f-' + c).value = s[c] ?? '';
+  $('f-tema').value = s.tema || 'epica';
+  $('f-estilo').value = s.estilo || 'epico';
+  $('comandos').innerHTML = '';
+  (s.comandos || []).forEach((cmd, i) => {
+    const f = document.createElement('div'); f.className = 'fila'; f.style.marginTop = '6px';
+    const inp = document.createElement('input'); inp.value = cmd; inp.setAttribute('aria-label', 'Comando ' + (i + 1));
+    inp.oninput = () => { s.comandos[i] = inp.value; guardar(); };
+    const x = document.createElement('button'); x.className = 'fijo'; x.textContent = 'Quitar';
+    x.onclick = () => { s.comandos.splice(i, 1); guardar(); pintarCampos(); };
+    f.append(inp, x); $('comandos').appendChild(f);
+  });
+  $('patros').innerHTML = '';
+  (s.patrocinadores || []).forEach((p, i) => {
+    const f = document.createElement('div'); f.className = 'fila'; f.style.marginTop = '8px';
+    const n = document.createElement('input'); n.value = p.nombre || ''; n.placeholder = 'Nombre'; n.setAttribute('aria-label', 'Patrocinador ' + (i + 1));
+    const d = document.createElement('input'); d.value = p.detalle || ''; d.placeholder = 'Qué aporta'; d.setAttribute('aria-label', 'Aportación del patrocinador ' + (i + 1));
+    n.oninput = () => { p.nombre = n.value; guardar(); };
+    d.oninput = () => { p.detalle = d.value; guardar(); };
+    const x = document.createElement('button'); x.className = 'fijo'; x.textContent = 'Quitar';
+    x.onclick = () => { s.patrocinadores.splice(i, 1); guardar(); pintarCampos(); };
+    f.append(n, d, x); $('patros').appendChild(f);
+  });
+  $('fondos').innerHTML = '';
+  TV.FONDOS.forEach((f) => {
+    const b = document.createElement('button'); b.className = s.fondo === f ? 'on' : ''; b.title = f;
+    b.innerHTML = `<img src="${f}" alt="">`;
+    b.onclick = () => { s.fondo = f; if (f !== 'img/faro.jpg' && s.efecto === 'barrera') s.efecto = 'ninguno'; guardar(); pintarCampos(); };
+    $('fondos').appendChild(b);
+  });
+  document.documentElement.style.setProperty('--acento', s.acento);
+  const uh = `${base}index.html?serie=${sel}`, uv = `${uh}&formato=vertical`;
+  $('url-h').textContent = uh; $('url-v').textContent = uv;
+}
+
+function pintarSubs() {
+  const mes = TV.claveMes();
+  $('mes').textContent = TV.nombreMes(mes);
+  const s = TV.subs(mes);
+  const ks = Object.keys(s).sort((a, b) => s[a].nombre.localeCompare(s[b].nombre, 'es', { sensitivity: 'base' }));
+  $('subs').innerHTML = ks.length ? '' : '<span class="estado">Todavía no hay nadie este mes.</span>';
+  for (const k of ks) {
+    const e = s[k], c = document.createElement('span');
+    c.className = 'chip' + (e.oculto ? ' oculto' : '');
+    c.textContent = e.nombre + (e.regaloDe ? ` (de ${e.regaloDe})` : '');
+    const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'Ocultar o mostrar ' + e.nombre);
+    x.onclick = () => { e.oculto = !e.oculto; TV.guardarSubs(mes, s); pintarSubs(); };
+    c.appendChild(x); $('subs').appendChild(c);
+  }
+}
+
+function pintarTwitch() {
+  $('client').value = TV.clientId();
+  const ult = localStorage.getItem('tv_ultima_sync');
+  $('estado').innerHTML = TV.token()
+    ? `<span class="ok">Conectado.</span> ${ult ? 'Última actualización: ' + new Date(ult).toLocaleString('es-ES') : ''}`
+    : '<span class="mal">No conectado.</span> Pon tu Client ID y pulsa Conectar.';
+}
+
+function pintarTodo() { pintarPestanas(); pintarCampos(); pintarSubs(); pintarTwitch(); }
+
+for (const c of CAMPOS) {
+  $('f-' + c).addEventListener('input', (e) => { serie()[c] = e.target.value; guardar(); if (c === 'nombre') pintarPestanas(); if (c === 'acento' || c === 'fondo') pintarCampos(); });
+}
+$('f-tema').innerHTML = Object.entries(TV.TEMAS).map(([k, t]) => `<option value="${k}">${t.nombre}</option>`).join('');
+$('f-estilo').addEventListener('change', (e) => { serie().estilo = e.target.value; guardar(); });
+$('f-tema').addEventListener('change', (e) => { serie().tema = e.target.value; guardar(); });
+$('f-efecto').addEventListener('change', (e) => { serie().efecto = e.target.value; guardar(); });
+$('horas-mas').onclick = () => {
+  // Suma 1 al primer número del sello (+6812 HORAS → +6813 HORAS)
+  const s = serie();
+  s.horas = (s.horas || '').replace(/\d+/, (m) => String(+m + 1));
+  guardar(); pintarCampos();
+};
+$('patro-mas').onclick = () => { (serie().patrocinadores ||= []).push({ nombre: '', detalle: '' }); guardar(); pintarCampos(); };
+$('cmd-mas').onclick = () => { (serie().comandos ||= []).push('!nuevo'); guardar(); pintarCampos(); };
+
+const idNuevo = (txt) => { let b = txt.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'serie', id = b, i = 2; while (cfg.series[id]) id = b + '-' + i++; return id; };
+$('nueva').onclick = () => { const id = idNuevo('nueva-serie'); cfg.series[id] = { ...JSON.parse(JSON.stringify(TV.SERIES_INICIALES.survival)), nombre: 'Nueva serie', titulo: 'NUEVA SERIE', efecto: 'ninguno', fondo: 'img/bosque.jpg', acento: '#a9dba0' }; sel = cfg.activa = id; guardar(); pintarTodo(); };
+$('duplicar').onclick = () => { const s = JSON.parse(JSON.stringify(serie())); s.nombre += ' (copia)'; const id = idNuevo(s.nombre); cfg.series[id] = s; sel = cfg.activa = id; guardar(); pintarTodo(); };
+$('borrar').onclick = () => {
+  if (Object.keys(cfg.series).length < 2) return;
+  const b = $('borrar');
+  if (b.dataset.confirmar !== '1') { b.dataset.confirmar = '1'; b.textContent = '¿Seguro? Pulsa otra vez'; setTimeout(() => { b.dataset.confirmar = ''; b.textContent = 'Borrar'; }, 3000); return; }
+  delete cfg.series[sel]; sel = cfg.activa = Object.keys(cfg.series)[0]; guardar(); b.dataset.confirmar = ''; b.textContent = 'Borrar'; pintarTodo();
+};
+
+$('ver-h').onclick = () => window.open($('url-h').textContent + '&obs=0', '_blank');
+$('ver-v').onclick = () => window.open($('url-v').textContent + '&obs=0', '_blank');
+
+$('add').onclick = () => {
+  const n = $('add-nombre').value.trim(); if (!n) return;
+  const mes = TV.claveMes(), s = TV.subs(mes);
+  s[n.toLowerCase()] = { nombre: n, regaloDe: $('add-regalo').value.trim() || undefined, manual: true };
+  TV.guardarSubs(mes, s); $('add-nombre').value = ''; $('add-regalo').value = ''; pintarSubs();
+};
+
+$('client').addEventListener('input', (e) => localStorage.setItem(TV.K_CLIENT, e.target.value.trim()));
+$('conectar').onclick = () => { if (!TV.clientId()) { $('estado').innerHTML = '<span class="mal">Primero pon tu Client ID.</span>'; return; } location.href = TV.urlLogin(location.origin + location.pathname); };
+$('sync').onclick = async () => {
+  $('estado').textContent = 'Actualizando…';
+  try { const r = await TV.sincronizar(); if (!r.ok) throw new Error('Conecta con Twitch primero'); pintarSubs(); pintarTwitch(); }
+  catch (e) { $('estado').innerHTML = `<span class="mal">${e.message}</span>`; }
+};
+
+$('exportar').onclick = () => {
+  const datos = {};
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('tv_') && k !== TV.K_TOKEN) datos[k] = localStorage.getItem(k); }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' }));
+  a.download = `despedida-trikivals-${TV.claveMes()}.json`; a.click();
+};
+$('importar').onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const d = JSON.parse(await f.text()); for (const [k, v] of Object.entries(d)) if (k.startsWith('tv_')) localStorage.setItem(k, v); cfg = TV.config(); sel = cfg.activa; pintarTodo(); }
+  catch { $('estado').innerHTML = '<span class="mal">Ese archivo no es una copia válida.</span>'; }
+};
+
+addEventListener('storage', () => { cfg = TV.config(); pintarSubs(); });
+pintarTodo();
+</script>
+</body>
+</html>
