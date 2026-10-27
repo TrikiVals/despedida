@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Sorteo · panel de control</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b101c;color:#e6ecf7;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px}
+body{padding:14px;display:flex;flex-direction:column;gap:12px;min-width:300px}
+.osw{font-family:'Oswald',sans-serif}
+.card{background:#121a2b;border:1px solid #26324a;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.tit{font-family:'Oswald',sans-serif;font-weight:500;font-size:14px;letter-spacing:.2em;color:#aab6cc;text-transform:uppercase}
+.cab{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px}
+.cab h1{margin:0;font-family:'Oswald',sans-serif;font-weight:700;font-size:28px;letter-spacing:.14em;line-height:1}
+.cab small{display:block;color:#aab6cc;font-size:13px;margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:8px;border:2px solid #3da0ff;border-radius:999px;padding:5px 12px;font-family:'Oswald',sans-serif;font-weight:500;font-size:14px;letter-spacing:.14em;color:#3da0ff;white-space:nowrap}
+.chip i{display:block;width:9px;height:9px;border-radius:50%;background:currentColor}
+.chip.brasa{border-color:#ff7a1a;color:#ff7a1a}
+.chip.gris{border-color:#55627f;color:#aab6cc}
+.chip.ok{border-color:#ffc04d;color:#ffc04d}
+.chat{display:flex;align-items:center;gap:8px;font-size:13px;color:#aab6cc}
+.chat i{display:block;width:10px;height:10px;border-radius:50%;background:#55627f}
+.chat.bien i{background:#3da0ff}
+.chat.med i{background:#ffc04d}
+.chat.mal i{background:#ff7a1a}
+button{font-family:'Oswald',sans-serif;cursor:pointer;border-radius:10px}
+button:disabled{opacity:.35;cursor:not-allowed}
+.b1,.b2{border:0;height:54px;font-weight:600;font-size:19px;letter-spacing:.12em}
+.b1{background:#3da0ff;color:#06101f}
+.b2{background:#ff7a1a;color:#1a0c02}
+.b3{height:46px;border:2px solid #ffc04d;background:transparent;color:#ffc04d;font-weight:500;font-size:16px;letter-spacing:.1em}
+.b4{height:42px;border:1px solid #55627f;background:transparent;color:#e6ecf7;font-weight:500;font-size:15px;letter-spacing:.1em}
+.bs{height:40px;border:0;background:#26324a;color:#e6ecf7;font-family:inherit;font-size:14px;font-weight:600;padding:0 12px}
+.fila2{display:flex;gap:10px}
+.fila2>*{flex:1;min-width:0}
+.info{font-size:13px;color:#aab6cc;line-height:1.45}
+.info b{color:#e6ecf7;font-weight:600}
+label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#aab6cc;margin-bottom:5px}
+input[type=text],input[type=number],select{width:100%;height:42px;background:#0b101c;border:1px solid #33425f;border-radius:8px;color:#e6ecf7;padding:0 12px;font-size:15px;font-family:inherit}
+input[type=color]{width:100%;height:42px;background:#0b101c;border:1px solid #33425f;border-radius:8px;padding:3px}
+.chk{display:flex;align-items:center;gap:10px;min-height:38px}
+.chk input{width:20px;height:20px;accent-color:#3da0ff;flex:none}
+.chk label{margin:0;text-transform:none;letter-spacing:0;font-size:14px;color:#e6ecf7}
+.campo{display:flex;flex-direction:column}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+details{border-top:1px solid #26324a;padding-top:10px}
+details>summary{cursor:pointer;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.16em;color:#aab6cc;text-transform:uppercase;list-style:none}
+details>summary::before{content:'+ ';color:#3da0ff}
+details[open]>summary::before{content:'– '}
+details>.dentro{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.cont{display:flex;align-items:baseline;justify-content:space-between}
+.cont b{font-family:'Oswald',sans-serif;font-weight:700;font-size:34px;color:#ffc04d;line-height:1}
+.lista{display:flex;flex-direction:column;gap:5px}
+.lista div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;background:#0b101c;border-radius:8px;font-size:14px}
+.lista span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lista button{border:0;background:transparent;color:#aab6cc;font-size:18px;line-height:1;padding:0 4px;height:24px}
+.url{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;height:38px}
+#msg{min-height:18px;font-size:13px;color:#ffc04d}
+</style>
+</head>
+<body>
+
+<div class="cab">
+  <div><h1>SORTEO</h1><small id="serie">Panel de control</small></div>
+  <div class="chip gris" id="chip-fase"><i></i><span id="chip-txt">SIN SORTEO</span></div>
+</div>
+
+<div class="card">
+  <div class="tit">Acciones</div>
+  <button class="b1" id="b-abrir">ABRIR SORTEO</button>
+  <button class="b2" id="b-sortear">CERRAR Y SORTEAR</button>
+  <button class="b3" id="b-repetir">VOLVER A SORTEAR (DESCARTAR GANADOR)</button>
+  <div class="fila2">
+    <button class="b4" id="b-confirmar">CONFIRMAR A MANO</button>
+    <button class="b4" id="b-reiniciar">REINICIAR Y OCULTAR</button>
+  </div>
+  <div class="info" id="info">Sin sorteo en marcha.</div>
+  <div id="msg"></div>
+</div>
+
+<div class="card">
+  <div class="cont"><div class="tit">Participantes</div><b id="n-part">0</b></div>
+  <div class="lista" id="lista"></div>
+  <div class="info">Se guardan en el navegador de OBS: si cierras el panel con el sorteo abierto, no se pierden. El panel tiene que estar abierto mientras dura el sorteo, porque es quien lee el chat.</div>
+  <details>
+    <summary>Herramientas de prueba</summary>
+    <div class="dentro">
+      <div class="info">Para ensayar sin chat. Con el sorteo abierto, añade participantes falsos; cuando salga el ganador, simula que responde.</div>
+      <div class="fila2">
+        <button class="bs" id="b-prueba">Añadir 20 de prueba</button>
+        <button class="bs" id="b-simular">Simular respuesta</button>
+      </div>
+    </div>
+  </details>
+</div>
+
+<div class="card">
+  <div class="tit">Ficha del sorteo</div>
+  <div class="campo"><label for="f-tipo">Tipo de sorteo</label><select id="f-tipo"></select></div>
+  <div class="campo"><label for="f-titulo">Título en pantalla</label><input type="text" id="f-titulo"></div>
+  <div class="campo"><label for="f-premio">Premio</label><input type="text" id="f-premio"></div>
+  <div class="grid">
+    <div class="campo"><label for="f-clave">Palabra clave</label><input type="text" id="f-clave" style="color:#3da0ff;font-weight:600"></div>
+    <div class="campo"><label for="f-tiempo">Tiempo para responder (seg.)</label><input type="number" id="f-tiempo" min="10" step="5"></div>
+  </div>
+  <div class="grid">
+    <div class="campo"><label for="f-ruleta">Duración ruleta (seg.)</label><input type="number" id="f-ruleta" min="3" max="60" step="1"></div>
+    <div class="campo"><label for="f-revelado">Mostrar ganador (seg.)</label><input type="number" id="f-revelado" min="2" max="30" step="1"></div>
+  </div>
+  <div class="chk"><input type="checkbox" id="f-doble"><label for="f-doble">Doble entrada para suscriptores</label></div>
+  <details>
+    <summary>Apariencia</summary>
+    <div class="dentro">
+      <div class="campo"><label for="f-nombre">Nombre de la ficha</label><input type="text" id="f-nombre"></div>
+      <div class="campo"><label for="f-subtitulo">Subtítulo</label><input type="text" id="f-subtitulo"></div>
+      <div class="grid">
+        <div class="campo"><label for="f-sello1">Sello (texto)</label><input type="text" id="f-sello1"></div>
+        <div class="campo"><label for="f-sello2">Sello (valor)</label><input type="text" id="f-sello2"></div>
+      </div>
+      <div class="campo"><label for="f-extra">Línea extra del premio (opcional)</label><input type="text" id="f-extra" placeholder="Donada por…"></div>
+      <div class="campo"><label for="f-img">Imagen del premio (ruta, opcional)</label><input type="text" id="f-img" placeholder="img/premio.png"></div>
+      <div class="campo"><label for="f-fondo">Fondo (vídeo WebM o imagen)</label><input type="text" id="f-fondo" placeholder="video/fondo-sorteo.webm"></div>
+      <div class="campo"><label for="f-anim">Animación del sorteo</label>
+        <select id="f-anim"><option value="codigo">Ruleta de nombres (por código)</option><option value="video">Mi vídeo (WebM)</option></select></div>
+      <div class="campo"><label for="f-vanim">Vídeo de animación (ruta)</label><input type="text" id="f-vanim" placeholder="video/animacion.webm"></div>
+      <div class="info">Si usas tu vídeo, pon en "Duración ruleta" lo que dura el vídeo.</div>
+      <div class="grid">
+        <div class="campo"><label for="c-azul">Azul</label><input type="color" id="c-azul"></div>
+        <div class="campo"><label for="c-brasa">Brasa</label><input type="color" id="c-brasa"></div>
+        <div class="campo"><label for="c-brasa2">Brasa clara</label><input type="color" id="c-brasa2"></div>
+        <div class="campo"><label for="c-hueso">Hueso</label><input type="color" id="c-hueso"></div>
+      </div>
+    </div>
+  </details>
+  <div class="fila2">
+    <button class="bs" id="b-duplicar">Duplicar como tipo nuevo</button>
+    <button class="bs" id="b-borrar">Eliminar esta ficha</button>
+  </div>
+  <div class="info">Los cambios se guardan solos y se ven al momento en el overlay.</div>
+</div>
+
+<div class="card">
+  <div class="tit">Chat de Twitch</div>
+  <div class="chat" id="chat"><i></i><span id="chat-txt">Sin conectar</span></div>
+  <div class="campo"><label for="a-canal">Canal</label><input type="text" id="a-canal"></div>
+  <div class="chk"><input type="checkbox" id="a-streamer"><label for="a-streamer">Excluir al streamer del sorteo</label></div>
+  <div class="campo"><label for="a-excl">Usuarios excluidos (bots), separados por comas</label><input type="text" id="a-excl"></div>
+  <div class="info">Lee el chat en modo solo lectura: no hace falta iniciar sesión.</div>
+</div>
+
+<div class="card">
+  <div class="tit">Enlaces para OBS (fuente “Navegador”)</div>
+  <div class="campo"><label for="u-h">Horizontal 1920×1080</label><input type="text" class="url" id="u-h" readonly></div>
+  <button class="bs" id="c-h">Copiar horizontal</button>
+  <div class="campo"><label for="u-v">Vertical 1080×1920 (TikTok)</label><input type="text" class="url" id="u-v" readonly></div>
+  <button class="bs" id="c-v">Copiar vertical</button>
+  <div class="info">Para ver cada pantalla sin chat, añade al final del enlace <b>?demo=abierto</b>, <b>sorteando</b>, <b>ganador</b>, <b>esperando</b>, <b>confirmado</b> o <b>descartado</b>. Con <b>?guia=1</b> se ve el hueco de la cámara.</div>
+</div>
+
+<script src="sorteo.js"></script>
+<script>
+(function () {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+
+  var fichas = Sorteo.leerFichas();
+  var ajustes = Sorteo.leerAjustes();
+  var E = Sorteo.leerEstado();
+  var timerGuardar = null;
+
+  function ficha() { return fichas.lista.filter(function (f) { return f.id === fichas.activa; })[0]; }
+  function msg(t) { $('msg').textContent = t || ''; if (t) { clearTimeout(msg.t); msg.t = setTimeout(function () { $('msg').textContent = ''; }, 5000); } }
+
+  function guardarE(ya) {
+    if (ya) { clearTimeout(timerGuardar); timerGuardar = null; Sorteo.guardarEstado(E); return; }
+    if (timerGuardar) return;
+    timerGuardar = setTimeout(function () { timerGuardar = null; Sorteo.guardarEstado(E); }, 200);
+  }
+  function guardarFichas() {
+    Sorteo.guardarFichas(fichas);
+    if (E.ficha && E.ficha.id === fichas.activa) { E.ficha = Sorteo.clonar(ficha()); guardarE(); }
+  }
+
+  /* ---------- ficha: formulario ---------- */
+  var CAMPOS = [
+    ['f-nombre', 'nombre'], ['f-titulo', 'titulo'], ['f-subtitulo', 'subtitulo'], ['f-sello1', 'selloTexto'], ['f-sello2', 'selloValor'],
+    ['f-premio', 'premio'], ['f-extra', 'premioExtra'], ['f-img', 'imagenPremio'], ['f-clave', 'palabraClave'],
+    ['f-tiempo', 'tiempoRespuesta', 'num'], ['f-ruleta', 'duracionRuleta', 'num'], ['f-revelado', 'revelado', 'num'],
+    ['f-fondo', 'fondo'], ['f-anim', 'animacion'], ['f-vanim', 'videoAnimacion'], ['f-doble', 'dobleSub', 'bool'],
+    ['c-azul', 'azul', 'color'], ['c-brasa', 'brasa', 'color'], ['c-brasa2', 'brasaClara', 'color'], ['c-hueso', 'hueso', 'color']
+  ];
+  function cargarFicha() {
+    var f = ficha();
+    CAMPOS.forEach(function (c) {
+      var el = $(c[0]), tipo = c[2];
+      if (tipo === 'color') el.value = f.colores[c[1]];
+      else if (tipo === 'bool') el.checked = !!f[c[1]];
+      else el.value = f[c[1]];
+    });
+    $('serie').textContent = 'Panel de control · ' + f.nombre;
+  }
+  function pintarSelectorFichas() {
+    var s = $('f-tipo'); s.innerHTML = '';
+    fichas.lista.forEach(function (f) {
+      var o = document.createElement('option'); o.value = f.id; o.textContent = f.nombre; if (f.id === fichas.activa) o.selected = true; s.appendChild(o);
+    });
+    $('b-borrar').disabled = fichas.lista.length < 2;
+  }
+  CAMPOS.forEach(function (c) {
+    var el = $(c[0]), tipo = c[2];
+    el.addEventListener(tipo === 'bool' ? 'change' : 'input', function () {
+      var f = ficha();
+      if (tipo === 'color') f.colores[c[1]] = el.value;
+      else if (tipo === 'bool') f[c[1]] = el.checked;
+      else if (tipo === 'num') { var n = Number(el.value); if (n > 0) f[c[1]] = n; }
+      else f[c[1]] = el.value;
+      if (c[1] === 'nombre') { pintarSelectorFichas(); $('serie').textContent = 'Panel de control · ' + f.nombre; }
+      guardarFichas();
+    });
+  });
+  $('f-tipo').addEventListener('change', function () {
+    fichas.activa = $('f-tipo').value; cargarFicha(); Sorteo.guardarFichas(fichas);
+  });
+  $('b-duplicar').addEventListener('click', function () {
+    var f = Sorteo.clonar(ficha()); f.id = 'f' + Date.now(); f.nombre = 'Copia de ' + f.nombre;
+    fichas.lista.push(f); fichas.activa = f.id; pintarSelectorFichas(); cargarFicha(); Sorteo.guardarFichas(fichas);
+    msg('Ficha duplicada. Ya puedes cambiarle el nombre en "Apariencia".');
+  });
+  $('b-borrar').addEventListener('click', function () {
+    if (fichas.lista.length < 2) return;
+    fichas.lista = fichas.lista.filter(function (f) { return f.id !== fichas.activa; });
+    fichas.activa = fichas.lista[0].id; pintarSelectorFichas(); cargarFicha(); Sorteo.guardarFichas(fichas);
+    msg('Ficha eliminada.');
+  });
+
+  /* ---------- ajustes del chat ---------- */
+  function cargarAjustes() { $('a-canal').value = ajustes.canal; $('a-streamer').checked = !!ajustes.excluirStreamer; $('a-excl').value = ajustes.excluidos; }
+  $('a-canal').addEventListener('change', function () { ajustes.canal = $('a-canal').value.trim(); Sorteo.guardarAjustes(ajustes); reintento = 0; conectar(); });
+  $('a-streamer').addEventListener('change', function () { ajustes.excluirStreamer = $('a-streamer').checked; Sorteo.guardarAjustes(ajustes); });
+  $('a-excl').addEventListener('input', function () { ajustes.excluidos = $('a-excl').value; Sorteo.guardarAjustes(ajustes); });
+
+  /* ---------- chat de Twitch (solo lectura, sin login) ---------- */
+  var ws = null, wsTimer = null, reintento = 0, wsCanal = '';
+  function setChat(txt, cls) { $('chat-txt').textContent = txt; $('chat').className = 'chat ' + (cls || ''); }
+  function cerrarWs() { if (ws) { var w = ws; ws = null; try { w.close(); } catch (e) {} } }
+  function conectar() {
+    clearTimeout(wsTimer); cerrarWs();
+    wsCanal = (ajustes.canal || '').trim().toLowerCase().replace(/^#/, '');
+    if (!wsCanal) { setChat('Pon el nombre de tu canal', 'mal'); return; }
+    setChat('Conectando a #' + wsCanal + '…', 'med');
+    var w;
+    try { w = new WebSocket('wss://irc-ws.chat.twitch.tv:443'); } catch (e) { setChat('No se pudo conectar', 'mal'); return; }
+    ws = w;
+    w.onopen = function () {
+      w.send('CAP REQ :twitch.tv/tags');
+      w.send('PASS SCHMOOPIIE');
+      w.send('NICK justinfan' + Math.floor(10000 + Math.random() * 80000));
+      w.send('JOIN #' + wsCanal);
+    };
+    w.onmessage = function (ev) {
+      String(ev.data).split('\r\n').forEach(function (l) {
+        if (!l) return;
+        if (l.indexOf('PING') === 0) { w.send('PONG :tmi.twitch.tv'); return; }
+        if (l.indexOf(' PRIVMSG ') > -1) { var m = parsear(l); if (m) onMensaje(m); return; }
+        if (l.indexOf(' 366 ') > -1 || l.indexOf(' ROOMSTATE ') > -1) { reintento = 0; setChat('Conectado a #' + wsCanal, 'bien'); }
+        if (l.indexOf(' NOTICE ') > -1 && l.toLowerCase().indexOf('login') > -1) setChat('Twitch ha rechazado la conexión', 'mal');
+      });
+    };
+    w.onclose = function () {
+      if (w !== ws) return;
+      setChat('Reconectando…', 'med');
+      reintento++;
+      wsTimer = setTimeout(conectar, Math.min(15000, 2000 * reintento));
+    };
+    w.onerror = function () { if (w === ws) setChat('Error de conexión', 'mal'); };
+  }
+  function desescapar(s) { return (s || '').replace(/\\s/g, ' ').replace(/\\:/g, ';').replace(/\\\\/g, '\\').replace(/\\r|\\n/g, ''); }
+  function parsear(linea) {
+    var tags = {}, resto = linea;
+    if (resto.charAt(0) === '@') {
+      var i = resto.indexOf(' ');
+      resto.slice(1, i).split(';').forEach(function (t) { var j = t.indexOf('='); tags[t.slice(0, j)] = t.slice(j + 1); });
+      resto = resto.slice(i + 1);
+    }
+    var m = /^:([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.*)$/.exec(resto);
+    if (!m) return null;
+    var texto = m[2];
+    if (texto.charCodeAt(0) === 1) texto = texto.replace(/^\u0001ACTION /, '').replace(/\u0001$/, '');
+    return { login: m[1].toLowerCase(), texto: texto, tags: tags };
+  }
+  function excluido(login) {
+    if (ajustes.excluirStreamer && login === wsCanal) return true;
+    return ajustes.excluidos.split(',').map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean).indexOf(login) > -1;
+  }
+  function onMensaje(m) {
+    var id = m.tags['user-id'] || m.login;
+    var nombre = desescapar(m.tags['display-name']) || m.login;
+    if (E.fase === 'abierto' && E.ficha) {
+      var primera = m.texto.trim().split(/\s+/)[0].toLowerCase();
+      if (primera && primera === String(E.ficha.palabraClave).trim().toLowerCase() && !excluido(m.login)) {
+        var esSub = m.tags.subscriber === '1' || /(^|,)(subscriber|founder)\//.test(m.tags.badges || '');
+        anadir(id, nombre, esSub);
+      }
+    } else if ((E.fase === 'ganador' || E.fase === 'esperando') && E.ganador && E.ganador.id === id) {
+      confirmar();
+    }
+  }
+  function anadir(id, nombre, esSub) {
+    if (E.participantes.some(function (p) { return p.id === id; })) return;
+    E.participantes.push({ id: id, nombre: nombre, peso: (E.ficha.dobleSub && esSub) ? 2 : 1, t: Date.now() });
+    guardarE(); pintar();
+  }
+
+  /* ---------- acciones ---------- */
+  function nuevoEstado(fase) {
+    return { fase: fase, ficha: null, participantes: [], descartados: [], ganador: null, ruleta: null, tFase: Date.now(), finRespuesta: null, rev: E.rev || 0 };
+  }
+  function abrir() {
+    if (!(E.fase === 'inactivo' || E.fase === 'confirmado')) return;
+    E = nuevoEstado('abierto'); E.ficha = Sorteo.clonar(ficha()); guardarE(true); msg('Sorteo abierto. Escucha el chat: ' + E.ficha.palabraClave); pintar();
+  }
+  function sortear() {
+    var pool = E.participantes.filter(function (p) { return E.descartados.indexOf(p.id) < 0; });
+    if (!pool.length) { msg('No quedan participantes disponibles.'); return; }
+    var total = pool.reduce(function (s, p) { return s + p.peso; }, 0), r = Sorteo.aleatorio() * total, g = pool[pool.length - 1];
+    for (var i = 0; i < pool.length; i++) { r -= pool[i].peso; if (r < 0) { g = pool[i]; break; } }
+    var dur = Math.max(3, Number(E.ficha.duracionRuleta) || 12), R = Math.max(20, Math.round(dur * 5));
+    var nombres = pool.map(function (p) { return p.nombre; }), seq = [];
+    for (var k = 0; k <= R + 3; k++) {
+      var n = nombres[Math.floor(Sorteo.aleatorio() * nombres.length)];
+      if (nombres.length > 1 && (k === R - 1 || k === R + 1) && n === g.nombre) n = nombres[(nombres.indexOf(n) + 1) % nombres.length];
+      if (nombres.length > 1 && seq.length && n === seq[seq.length - 1]) n = nombres[(nombres.indexOf(n) + 1) % nombres.length];
+      seq.push(n);
+    }
+    seq[R] = g.nombre;
+    E.ganador = { id: g.id, nombre: g.nombre };
+    E.ruleta = { inicio: Date.now() + 500, duracion: dur, R: R, seq: seq };
+    E.fase = 'sorteando'; E.tFase = Date.now(); E.finRespuesta = null;
+    guardarE(true); pintar();
+  }
+  function repetir() {
+    if (!(E.fase === 'ganador' || E.fase === 'esperando' || E.fase === 'descartado')) return;
+    if (E.ganador && E.descartados.indexOf(E.ganador.id) < 0) E.descartados.push(E.ganador.id);
+    sortear();
+  }
+  function confirmar() {
+    if (!(E.fase === 'ganador' || E.fase === 'esperando' || E.fase === 'descartado')) return;
+    E.fase = 'confirmado'; E.tFase = Date.now(); E.finRespuesta = null; guardarE(true); pintar();
+  }
+  function reiniciar() { E = nuevoEstado('inactivo'); guardarE(true); msg('Sorteo reiniciado y overlay oculto.'); pintar(); }
+
+  $('b-abrir').addEventListener('click', abrir);
+  $('b-sortear').addEventListener('click', sortear);
+  $('b-repetir').addEventListener('click', repetir);
+  $('b-confirmar').addEventListener('click', confirmar);
+  $('b-reiniciar').addEventListener('click', reiniciar);
+  $('b-prueba').addEventListener('click', function () {
+    if (E.fase !== 'abierto') { msg('Abre el sorteo primero.'); return; }
+    var nom = ['Creeper', 'Zombi', 'Aldeano', 'Esqueleto', 'Piglin', 'Enderman', 'Golem', 'Slime', 'Pillager', 'Warden'];
+    for (var i = 0; i < 20; i++) {
+      var s = Math.floor(Sorteo.aleatorio() * 1e6);
+      E.participantes.push({ id: 'prueba' + s + i, nombre: nom[Math.floor(Sorteo.aleatorio() * nom.length)] + 'Prueba' + (s % 1000), peso: 1, t: Date.now() });
+    }
+    guardarE(true); pintar();
+  });
+  $('b-simular').addEventListener('click', function () {
+    if (E.fase === 'ganador' || E.fase === 'esperando') confirmar(); else msg('Solo funciona cuando ya hay un ganador esperando.');
+  });
+
+  /* ---------- fases por tiempo (si recargas el panel, sigue donde estaba) ---------- */
+  function ciclo() {
+    var ahora = Date.now(), cambio = false;
+    if (E.fase === 'sorteando' && E.ruleta && ahora >= E.ruleta.inicio + E.ruleta.duracion * 1000 + 1500) { E.fase = 'ganador'; E.tFase = ahora; cambio = true; }
+    else if (E.fase === 'ganador' && ahora >= E.tFase + (Number(E.ficha.revelado) || 5) * 1000) {
+      E.fase = 'esperando'; E.tFase = ahora; E.finRespuesta = ahora + (Number(E.ficha.tiempoRespuesta) || 120) * 1000; cambio = true;
+    }
+    else if (E.fase === 'esperando' && ahora >= E.finRespuesta) { E.fase = 'descartado'; E.tFase = ahora; cambio = true; }
+    if (cambio) guardarE(true);
+    pintar();
+  }
+
+  /* ---------- pintar ---------- */
+  var FASES = {
+    inactivo: ['SIN SORTEO', 'gris'], abierto: ['ABIERTO', ''], sorteando: ['SORTEANDO', 'brasa'], ganador: ['GANADOR', 'ok'],
+    esperando: ['ESPERANDO MENSAJE', 'ok'], confirmado: ['CONFIRMADO', ''], descartado: ['SIN RESPUESTA', 'brasa']
+  };
+  function pintar() {
+    var f = E.fase, d = FASES[f];
+    $('chip-fase').className = 'chip ' + d[1]; $('chip-txt').textContent = d[0];
+    var libre = (f === 'inactivo' || f === 'confirmado');
+    var pendiente = (f === 'ganador' || f === 'esperando' || f === 'descartado');
+    $('b-abrir').disabled = !libre;
+    $('b-sortear').disabled = !(f === 'abierto' && E.participantes.length > 0);
+    $('b-repetir').disabled = !pendiente;
+    $('b-confirmar').disabled = !pendiente;
+    $('b-prueba').disabled = f !== 'abierto';
+    $('n-part').textContent = E.participantes.length;
+    var t = '';
+    if (f === 'inactivo') t = 'Sin sorteo en marcha.';
+    else if (f === 'abierto') t = 'Escuchando el chat: <b>' + esc(E.ficha.palabraClave) + '</b>';
+    else if (f === 'sorteando') t = 'Girando la ruleta…';
+    else if (f === 'ganador') t = 'Ganador: <b>' + esc(E.ganador.nombre) + '</b>';
+    else if (f === 'esperando') {
+      var seg = Math.max(0, Math.ceil((E.finRespuesta - Date.now()) / 1000));
+      t = 'Ganador: <b>' + esc(E.ganador.nombre) + '</b> · le quedan <b>' + Math.floor(seg / 60) + ':' + ('0' + (seg % 60)).slice(-2) + '</b> para escribir en el chat';
+    }
+    else if (f === 'confirmado') t = '<b>' + esc(E.ganador.nombre) + '</b> ha confirmado el premio.';
+    else if (f === 'descartado') t = '<b>' + esc(E.ganador.nombre) + '</b> no ha respondido a tiempo. Pulsa "Volver a sortear".';
+    if (E.descartados.length) t += '<br>Descartados: ' + E.descartados.length;
+    $('info').innerHTML = t;
+    /* lista de participantes (los 8 últimos) */
+    var cont = $('lista'), ult = E.participantes.slice(-8).reverse();
+    var firma = ult.map(function (p) { return p.id; }).join(',') + '|' + f;
+    if (cont.getAttribute('data-f') !== firma) {
+      cont.setAttribute('data-f', firma); cont.innerHTML = '';
+      ult.forEach(function (p) {
+        var fila = document.createElement('div'), s = document.createElement('span');
+        s.textContent = p.nombre + (p.peso > 1 ? ' (x' + p.peso + ')' : '');
+        fila.appendChild(s);
+        if (f === 'abierto') {
+          var b = document.createElement('button'); b.textContent = '×'; b.title = 'Quitar del sorteo';
+          b.addEventListener('click', function () { E.participantes = E.participantes.filter(function (x) { return x.id !== p.id; }); guardarE(true); pintar(); });
+          fila.appendChild(b);
+        }
+        cont.appendChild(fila);
+      });
+    }
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  /* ---------- enlaces ---------- */
+  var base = new URL('./', location.href).href;
+  $('u-h').value = base; $('u-v').value = base + '?formato=vertical';
+  function copiar(id, boton) {
+    var el = $(id); el.focus(); el.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    if (!ok && navigator.clipboard) { navigator.clipboard.writeText(el.value).then(function () { msg('Enlace copiado.'); }); return; }
+    msg(ok ? 'Enlace copiado.' : 'Selecciónalo y cópialo con Ctrl+C.');
+  }
+  $('c-h').addEventListener('click', function () { copiar('u-h'); });
+  $('c-v').addEventListener('click', function () { copiar('u-v'); });
+  $('u-h').addEventListener('click', function () { this.select(); });
+  $('u-v').addEventListener('click', function () { this.select(); });
+
+  /* ---------- arranque ---------- */
+  Sorteo.guardarFichas(fichas); Sorteo.guardarAjustes(ajustes);
+  pintarSelectorFichas(); cargarFicha(); cargarAjustes();
+  conectar(); pintar();
+  setInterval(ciclo, 250);
+})();
+</script>
+</body>
+</html>
