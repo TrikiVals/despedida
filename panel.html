@@ -110,6 +110,7 @@
   <label for="client">Client ID de tu app de Twitch</label><input id="client">
   <div class="fila" style="margin-top:10px"><button class="primario" id="conectar">Conectar con Twitch</button><button id="sync">Actualizar ahora</button></div>
   <p class="estado" id="estado"></p>
+  <p class="nota">En tu app de Twitch, la URL de redireccionamiento debe ser exactamente:<br><code id="redir"></code></p>
 </div>
 
 <h2>Copia de seguridad</h2>
@@ -121,7 +122,8 @@
 <script src="datos.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-const base = location.href.replace(/panel\.html.*$/, '');
+const base = location.origin + location.pathname.replace(/[^/]*$/, '');
+const REDIRECT = base + 'panel.html';
 let cfg = TV.config();
 let sel = cfg.activa;
 const CAMPOS = ['nombre', 'titulo', 'horas', 'gracias1', 'gracias2', 'despedida', 'subtitulo', 'cita', 'fondo', 'acento', 'efecto', 'colaboradores', 'video', 'patroTitulo'];
@@ -242,7 +244,7 @@ $('add').onclick = () => {
 };
 
 $('client').addEventListener('input', (e) => localStorage.setItem(TV.K_CLIENT, e.target.value.trim()));
-$('conectar').onclick = () => { if (!TV.clientId()) { $('estado').innerHTML = '<span class="mal">Primero pon tu Client ID.</span>'; return; } location.href = TV.urlLogin(location.origin + location.pathname); };
+$('conectar').onclick = () => { if (!TV.clientId()) { $('estado').innerHTML = '<span class="mal">Primero pon tu Client ID.</span>'; return; } location.href = TV.urlLogin(REDIRECT); };
 $('sync').onclick = async () => {
   $('estado').textContent = 'Actualizando…';
   try { const r = await TV.sincronizar(); if (!r.ok) throw new Error('Conecta con Twitch primero'); pintarSubs(); pintarTwitch(); }
@@ -263,6 +265,7 @@ $('importar').onchange = async (e) => {
 };
 
 addEventListener('storage', () => { cfg = TV.config(); pintarSubs(); });
+$('redir').textContent = REDIRECT;
 pintarTodo();
 </script>
 </body>
