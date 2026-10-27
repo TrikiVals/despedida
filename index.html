@@ -188,14 +188,15 @@ function serieActual() {
   const id = P.get('serie') && c.series[P.get('serie')] ? P.get('serie') : c.activa;
   return c.series[id] || Object.values(c.series)[0];
 }
-// Por defecto: el MES ANTERIOR completo (del día 1 al último día).
-// ?mes=actual muestra el mes en curso · ?mes=2026-09 un mes concreto
+// Por defecto: los suscritos ACTIVOS ahora mismo.
+// Opcional: ?mes=anterior (mes pasado completo) · ?mes=actual · ?mes=2026-09
+const MODO_MES = !!P.get('mes');
 function mesMostrado() {
   const m = P.get('mes');
   if (m && /^\d{4}-\d{2}$/.test(m)) return m;
   const hoy = new Date();
-  if (m === 'actual') return TV.claveMes(hoy);
-  return TV.claveMes(new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1));
+  if (m === 'anterior') return TV.claveMes(new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1));
+  return TV.claveMes(hoy);
 }
 
 function svgSello() {
@@ -244,7 +245,7 @@ let animLista = null;
 function pintar() {
   const s = serieActual();
   const mes = mesMostrado();
-  const datos = DEMO ? TV.demo() : TV.listaVisible(mes);
+  const datos = DEMO ? TV.demo() : (MODO_MES ? TV.listaVisible(mes) : TV.listaActivos());
   const W = VERTICAL ? 1080 : 1920, H = VERTICAL ? 1920 : 1080;
   const el = document.getElementById('escena');
   el.className = `escena ${VERTICAL ? 'v' : 'h'} ${OBS ? 'obs' : ''} ${P.get('animacion') === '0' ? 'quieto' : ''} ${s.estilo === 'hc5' ? 'hc5' : ''}`;

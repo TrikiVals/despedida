@@ -108,6 +108,22 @@ const TV = (() => {
     return { lista: vis, total: vis.length, regaladas: vis.filter((e) => e.regaloDe).length };
   }
 
+  // Suscritos AHORA MISMO (lo último leído de Twitch) + añadidos a mano, sin los ocultos
+  const K_EXTRA = 'tv_ahora_extra';
+  const activos = () => leerJSON('tv_activos', {});
+  const extra = () => leerJSON(K_EXTRA, {});
+  const guardarExtra = (e) => guardarJSON(K_EXTRA, e);
+  function listaActivos() {
+    const a = activos(), e = extra(), todos = {};
+    for (const [k, v] of Object.entries(a)) todos[k] = { ...v };
+    for (const [k, v] of Object.entries(e)) {
+      if (v.oculto) { if (todos[k]) todos[k].oculto = true; continue; }
+      todos[k] = { ...(todos[k] || {}), ...v };
+    }
+    const vis = Object.values(todos).filter((x) => !x.oculto && x.nombre).sort((x, y) => x.nombre.localeCompare(y.nombre, 'es', { sensitivity: 'base' }));
+    return { lista: vis, total: vis.length, regaladas: vis.filter((x) => x.regaloDe).length };
+  }
+
   // ---- Twitch ----
   const token = () => localStorage.getItem(K_TOKEN);
   const clientId = () => localStorage.getItem(K_CLIENT) || '';
@@ -125,6 +141,7 @@ const TV = (() => {
     const yo = (await api('users')).data[0];
     const mes = claveMes();
     const s = subs(mes);
+    const ahora = {};
     let cursor = '';
     do {
       const j = await api(`subscriptions?broadcaster_id=${yo.id}&first=100${cursor ? '&after=' + cursor : ''}`);
@@ -133,6 +150,7 @@ const TV = (() => {
         const k = x.user_login.toLowerCase();
         if (!s[k]) s[k] = { nombre: x.user_name };
         if (x.is_gift && x.gifter_name && !s[k].regaloDe) s[k].regaloDe = x.gifter_name;
+        ahora[k] = { nombre: x.user_name, regaloDe: x.is_gift ? x.gifter_name : undefined };
         if (x.is_gift && x.gifter_login) {
           const g = x.gifter_login.toLowerCase();
           if (!s[g]) s[g] = { nombre: x.gifter_name };
@@ -141,6 +159,7 @@ const TV = (() => {
       cursor = j.pagination && j.pagination.cursor;
     } while (cursor);
     guardarSubs(mes, s);
+    guardarJSON('tv_activos', ahora);
     localStorage.setItem('tv_ultima_sync', new Date().toISOString());
     return { ok: true, total: Object.keys(s).length, canal: yo.display_name };
   }
@@ -163,5 +182,5 @@ const TV = (() => {
     return { lista, total: lista.length, regaladas: lista.filter((e) => e.regaloDe).length };
   }
 
-  return { config, guardarConfig, claveMes, nombreMes, subs, guardarSubs, listaVisible, sincronizar, urlLogin, recogerTokenDeURL, token, clientId, K_CLIENT, K_TOKEN, FONDOS, TEMAS, SERIES_INICIALES, demo };
+  return { activos, extra, guardarExtra, listaActivos, config, guardarConfig, claveMes, nombreMes, subs, guardarSubs, listaVisible, sincronizar, urlLogin, recogerTokenDeURL, token, clientId, K_CLIENT, K_TOKEN, FONDOS, TEMAS, SERIES_INICIALES, demo };
 })();
