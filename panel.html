@@ -91,18 +91,19 @@
   <label>Horizontal (1920×1080)</label><div class="url" id="url-h"></div>
   <label>Vertical TikTok (1080×1920)</label><div class="url" id="url-v"></div>
   <div class="fila" style="margin-top:8px"><button id="ver-h">Ver horizontal</button><button id="ver-v">Ver vertical</button></div>
-  <p class="nota">Añade <code>&amp;anterior=1</code> para mostrar el mes pasado.</p>
+  <p class="nota">Por defecto sale el mes anterior. Añade <code>&amp;mes=actual</code> para ver el mes en curso.</p>
 </div>
 
 <h2>Colaboradores de <span id="mes"></span></h2>
 <div class="caja">
+  <div class="pestanas" id="meses" style="margin-bottom:10px"></div>
   <div id="subs"></div>
   <div class="fila" style="margin-top:8px">
     <input id="add-nombre" placeholder="Nombre">
     <input id="add-regalo" placeholder="Regalo de (opcional)">
     <button class="fijo" id="add">Añadir</button>
   </div>
-  <p class="nota">Pulsa × para ocultar a alguien (vuelve a pulsar para mostrarlo). Los subs de Twitch se suman solos y nunca se borran durante el mes.</p>
+  <p class="nota">La despedida muestra siempre el <b>mes anterior completo</b> (del 1 al último día). Durante el mes en curso se van apuntando los subs, y el día 1 del mes siguiente pasan a salir en la despedida. Pulsa × para ocultar a alguien.</p>
 </div>
 
 <h2>Twitch</h2>
@@ -181,9 +182,18 @@ function pintarCampos() {
   $('url-h').textContent = uh; $('url-v').textContent = uv;
 }
 
+const hoy = new Date();
+const MES_ANTERIOR = TV.claveMes(new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1));
+const MES_ACTUAL = TV.claveMes(hoy);
+let mesPanel = MES_ANTERIOR;
 function pintarSubs() {
-  const mes = TV.claveMes();
+  const mes = mesPanel;
   $('mes').textContent = TV.nombreMes(mes);
+  $('meses').innerHTML = '';
+  [[MES_ANTERIOR, 'Mes anterior: ' + TV.nombreMes(MES_ANTERIOR) + ' (sale en la despedida)'], [MES_ACTUAL, 'Mes en curso: ' + TV.nombreMes(MES_ACTUAL) + ' (se va llenando)']].forEach(([k, t]) => {
+    const b = document.createElement('button'); b.textContent = t; if (k === mesPanel) b.className = 'on';
+    b.onclick = () => { mesPanel = k; pintarSubs(); }; $('meses').appendChild(b);
+  });
   const s = TV.subs(mes);
   const ks = Object.keys(s).sort((a, b) => s[a].nombre.localeCompare(s[b].nombre, 'es', { sensitivity: 'base' }));
   $('subs').innerHTML = ks.length ? '' : '<span class="estado">Todavía no hay nadie este mes.</span>';
@@ -238,7 +248,7 @@ $('ver-v').onclick = () => window.open($('url-v').textContent + '&obs=0', '_blan
 
 $('add').onclick = () => {
   const n = $('add-nombre').value.trim(); if (!n) return;
-  const mes = TV.claveMes(), s = TV.subs(mes);
+  const mes = mesPanel, s = TV.subs(mes);
   s[n.toLowerCase()] = { nombre: n, regaloDe: $('add-regalo').value.trim() || undefined, manual: true };
   TV.guardarSubs(mes, s); $('add-nombre').value = ''; $('add-regalo').value = ''; pintarSubs();
 };
